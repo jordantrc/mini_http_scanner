@@ -6,10 +6,11 @@
 # Usage: mini_http_scanner.py [OPTIONS] host(s)
 # Valid options:
 #   -h, --help      show this help and exit
-#   -p, --ports=    a comma-separated list of ports to scan, defaults to 80 and 443
-#   -u, --url=      a URL to scan those hosts for, defaults to "/"
+#   -p, --ports     a comma-separated list of ports to scan, defaults to 80 and 443
+#   -u, --url       a URL to scan those hosts for, defaults to "/"
 #   -t, --threads   number of threads to use for scanning
 #   -o, --out       name of output file, defaults to STDOUT
+#   -w, --wait      time to wait for a response in seconds, default is 10 seconds
 #   
 #   host(s) is one of the following:
 #       - a single IP address (e.g. 192.168.2.1)
@@ -33,12 +34,13 @@ urllib3.disable_warnings()
 
 class HTTPScan():
 
-    def __init__(self, url=None, ports=None, threads=None, hosts=None):
+    def __init__(self, url=None, ports=None, threads=None, hosts=None, wait=None):
         '''initializes the object'''
         self.url = url
         self.ports = self.create_port_list(ports)
         self.threads = threads
         self.hosts = self.create_host_set(hosts)
+        self.wait = wait
 
     @staticmethod
     def create_port_list(ports):
@@ -163,6 +165,7 @@ def main():
     parser.add_argument('-u', '--url', default='/')
     parser.add_argument('-t', '--threads', type=int, default=1)
     parser.add_argument('-o', '--out', default=sys.stdout)
+    parser.add_argument('-w', '--wait', type=int, default=10)
     args = parser.parse_args()
 
     # gather arguments
@@ -171,6 +174,7 @@ def main():
     threads = args.threads
     hosts = args.hosts
     output = args.out
+    wait = args.wait
     if output != sys.stdout:
         if os.path.isfile(output):
             assert False, "[-] file %s already exists, exiting" % output
@@ -178,7 +182,7 @@ def main():
             output = open(output, 'w')
 
     start_time = time.time()
-    scanner = HTTPScan(url, ports, threads, hosts)
+    scanner = HTTPScan(url, ports, threads, hosts, wait)
     scanner.scan(output)
     end_time = time.time()
     output.write("[*] scanned %s hosts in %03f seconds" % (len(scanner.hosts), end_time - start_time))
@@ -192,6 +196,7 @@ def print_help():
    -u, --url       a URL to scan those hosts for, defaults to "/"
    -t, --threads   number of threads to use for scanning
    -o, --out       name of output file, defaults to STDOUT
+   -w, --wait      time to wait for a response in seconds, default is 10 seconds
    
    host(s) is one of the following:
        - a single IP address (e.g. 192.168.2.1)

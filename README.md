@@ -11,6 +11,7 @@ Valid options:
    -u, --url=      a URL to scan those hosts for, defaults to "/"
    -t, --threads   number of threads to use for scanning
    -o, --out       name of output file, defaults to STDOUT
+   -w, --wait      time to wait for a response in seconds, default is 10 seconds
    
    host(s) is one of the following:
        - a single IP address (e.g. 192.168.2.1)
