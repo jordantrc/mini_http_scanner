@@ -1,8 +1,8 @@
-#Mini HTTP Scanner
+# Mini HTTP Scanner
 
 Simple script that scans web ports for particular URLs.
 
-#Usage
+# Usage
 
 mini_http_scanner.py [OPTIONS] host(s)
 Valid options:
