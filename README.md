@@ -4,7 +4,7 @@ Simple script that scans web ports for particular URLs.
 
 # Usage
 
-mini_http_scanner.py [OPTIONS] host(s)
+```mini_http_scanner.py [OPTIONS] host(s)
 Valid options:
    -h, --help      show this help and exit
    -p, --ports=    a comma-separated list of ports to scan, defaults to 80 and 443
@@ -17,3 +17,4 @@ Valid options:
        - a range of IP addresses (e.g. 192.168.2.10-192.168.2.12)
        - a network ID and subnet mask (e.g. 192.168.2.0/24)
        - a file containing a list of hosts/network ids and subnet masks, one per line
+```
