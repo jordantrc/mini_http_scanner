@@ -123,19 +123,17 @@ class HTTPScan():
                         full_url = 'http://%s:%d%s' % (host, p, url)
                         r = requests.get(full_url, verify=False)
 
-                elif protocol == 'http':
-                    full_url = 'http://%s:%d%s' % (host, p, url)
-                    r = requests.get(full_url, verify=False)
-
-                elif protocol == 'https':
-                    full_url = 'https://%s:%d%s' % (host, p, url)
-                    r = requests.get(full_url, verify=False)
-
-                # add result
-                if r.url == full_url:
-                    result.append('[*] %s - status: %d' % (r.url, r.status_code))
                 else:
-                    result.append('[*] REDIRECT %s to %s - status: %d' % (full_url, r.url, r.status_code))
+                    try:
+                        full_url = '%s://%s:%d%s' % (protocol, host, p, url)
+                        r = requests.get(full_url, verify=False)
+                        # add result
+                        if r.url == full_url:
+                            result.append('[*] %s - status: %d' % (r.url, r.status_code))
+                        else:
+                            result.append('[*] REDIRECT %s to %s - status: %d' % (full_url, r.url, r.status_code))
+                    except:
+                        result.append('[-] could not connect to %s:%s' % (host, p))
 
             results[index] = result
 
