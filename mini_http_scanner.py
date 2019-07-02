@@ -96,46 +96,35 @@ class HTTPScan():
 
         return host_list
 
+    # worker function
+    def scan_worker(self, host, ports, url, results, index):
+        '''performs a scan against a single host on all ports'''
+        result = []
+        for p in ports:
+            if p == 80:
+                protocol = ['http']
+            elif p == 443:
+                protocol = ['https']
+            else:
+                # try both
+                protocol = ['http', 'https']
+
+            for proto in protocol:
+                try:
+                    full_url = '%s://%s:%d%s' % (proto, host, p, url)
+                    r = requests.get(full_url, verify=False)
+                    # add result
+                    if r.url == full_url:
+                        result.append('[*] %s - status: %d' % (r.url, r.status_code))
+                    else:
+                        result.append('[*] REDIRECT %s to %s - status: %d' % (full_url, r.url, r.status_code))
+                except:
+                    result.append('[-] could not connect to %s:%s' % (host, p))
+
+        results[index] = result
+
     def scan(self, output_fd):
         '''performs scan, reports results'''
-        
-        # worker function
-        def scan_worker(host, ports, url, results, index):
-            '''performs a scan against a single host on all ports'''
-            result = []
-            for p in ports:
-                if p == 80:
-                    protocol = 'http'
-                elif p == 443:
-                    protocol = 'https'
-                else:
-                    # try both
-                    protocol = 'http/s'
-
-                # corner case where presence of HTTPS is unknown
-                if protocol == 'http/s':
-                    valid_protocol = 'https'
-                    try:
-                        full_url = 'https://%s:%d%s' % (host, p, url)
-                        r_https = requests.get(full_url, verify=False)
-                    except:
-                        valid_protocol = 'http'
-                        full_url = 'http://%s:%d%s' % (host, p, url)
-                        r = requests.get(full_url, verify=False)
-
-                else:
-                    try:
-                        full_url = '%s://%s:%d%s' % (protocol, host, p, url)
-                        r = requests.get(full_url, verify=False)
-                        # add result
-                        if r.url == full_url:
-                            result.append('[*] %s - status: %d' % (r.url, r.status_code))
-                        else:
-                            result.append('[*] REDIRECT %s to %s - status: %d' % (full_url, r.url, r.status_code))
-                    except:
-                        result.append('[-] could not connect to %s:%s' % (host, p))
-
-            results[index] = result
 
         # create list from host set
         host_list = list(self.hosts)
@@ -152,7 +141,7 @@ class HTTPScan():
             results = [None] * num_threads
             for i in range(num_threads):
                 host = host_list.pop()
-                t = threading.Thread(target=scan_worker, args=(host, self.ports, self.url, results, i,))
+                t = threading.Thread(target=self.scan_worker, args=(host, self.ports, self.url, results, i,))
                 threads.append(t)
                 t.start()
 
