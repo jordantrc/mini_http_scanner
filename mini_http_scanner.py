@@ -114,7 +114,7 @@ class HTTPScan():
             for proto in protocol:
                 try:
                     full_url = '%s://%s:%d%s' % (proto, host, p, url)
-                    r = requests.get(full_url, verify=False)
+                    r = requests.get(full_url, verify=False, timeout=self.wait)
                     # add result
                     if r.url == full_url:
                         result.append('[*] %s - status: %d' % (r.url, r.status_code))
