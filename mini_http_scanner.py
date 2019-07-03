@@ -41,6 +41,8 @@ class HTTPScan():
         self.threads = threads
         self.hosts = self.create_host_set(hosts)
         self.wait = wait
+        self.num_ports = len(self.ports)
+        self.num_hosts = len(self.hosts)
 
     @staticmethod
     def create_port_list(ports):
@@ -130,6 +132,7 @@ class HTTPScan():
 
         # create list from host set
         host_list = list(self.hosts)
+        num_hosts_scanned = 0
 
         while len(host_list) > 0:
             # special case, last iteration
@@ -139,6 +142,7 @@ class HTTPScan():
                 num_threads = self.threads
             
             # create and start threads
+            num_hosts_scanned += num_threads
             threads = []
             results = [None] * num_threads
             for i in range(num_threads):
@@ -181,8 +185,10 @@ def main():
         else:
             output = open(output, 'w')
 
-    start_time = time.time()
+    # create scanner object and scan
     scanner = HTTPScan(url, ports, threads, hosts, wait)
+    output.write("[*] scanning %s hosts on %s ports" % (scanner.num_hosts, scanner.num_ports))
+    start_time = time.time()
     scanner.scan(output)
     end_time = time.time()
     output.write("[*] scanned %s hosts in %03f seconds" % (len(scanner.hosts), end_time - start_time))
