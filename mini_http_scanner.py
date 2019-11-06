@@ -34,7 +34,7 @@ urllib3.disable_warnings()
 
 class HTTPScan():
 
-    def __init__(self, url=None, ports=None, threads=None, hosts=None, wait=None):
+    def __init__(self, url=None, ports=None, threads=None, hosts=None, wait=None, match=None):
         '''initializes the object'''
         self.url = url
         self.ports = self.create_port_list(ports)
@@ -43,6 +43,7 @@ class HTTPScan():
         self.wait = wait
         self.num_ports = len(self.ports)
         self.num_hosts = len(self.hosts)
+        self.match = match
 
     @staticmethod
     def create_port_list(ports):
@@ -117,11 +118,26 @@ class HTTPScan():
                 try:
                     full_url = '%s://%s:%d%s' % (proto, host, p, url)
                     r = requests.get(full_url, verify=False, timeout=self.wait)
+
+                    string_match = None
+                    if self.match is not None:
+                        # determine if the content contains the match string
+                        # content is bytes, convert to string first
+                        string_match = False
+                        if self.match in str(r.content):
+                            string_match = True
+
                     # add result
                     if r.url == full_url:
-                        result.append('[*] %s - status: %d' % (r.url, r.status_code))
+                        if string_match is None:
+                            result.append('[*] %s - status: %d' % (r.url, r.status_code))
+                        else:
+                            result.append('[*] %s - status: %d, string match: %s' % (r.url, r.status_code, string_match))
                     else:
-                        result.append('[*] REDIRECT %s to %s - status: %d' % (full_url, r.url, r.status_code))
+                        if string_match is None:
+                            result.append('[*] REDIRECT %s to %s - status: %d' % (full_url, r.url, r.status_code))
+                        else:
+                            result.append('[*] REDIRECT %s to %s - status: %d, string match: %s' % (full_url, r.url, r.status_code, string_match))
                 except:
                     result.append('[-] could not connect to %s:%s' % (host, p))
 
@@ -170,6 +186,7 @@ def main():
     parser.add_argument('-t', '--threads', type=int, default=1)
     parser.add_argument('-o', '--out', default=sys.stdout)
     parser.add_argument('-w', '--wait', type=int, default=10)
+    parser.add_argument('-m', '--match-string')
     args = parser.parse_args()
 
     # gather arguments
@@ -179,6 +196,7 @@ def main():
     hosts = args.hosts
     output = args.out
     wait = args.wait
+    match = args.m
     if output != sys.stdout:
         if os.path.isfile(output):
             assert False, "[-] file %s already exists, exiting" % output
@@ -186,7 +204,7 @@ def main():
             output = open(output, 'w')
 
     # create scanner object and scan
-    scanner = HTTPScan(url, ports, threads, hosts, wait)
+    scanner = HTTPScan(url, ports, threads, hosts, wait, match)
     output.write("[*] scanning %s hosts on %s ports" % (scanner.num_hosts, scanner.num_ports))
     start_time = time.time()
     scanner.scan(output)
@@ -197,12 +215,18 @@ def main():
 def print_help():
     '''print help'''
     print("""Valid options:
-   -h, --help      show this help and exit
-   -p, --ports     a comma-separated list of ports to scan, defaults to 80 and 443
-   -u, --url       a URL to scan those hosts for, defaults to "/"
-   -t, --threads   number of threads to use for scanning
-   -o, --out       name of output file, defaults to STDOUT
-   -w, --wait      time to wait for a response in seconds, default is 10 seconds
+   -h, --help       show this help and exit
+   -p, --ports      a comma-separated list of ports to scan, defaults to 80 and 443
+   -u, --url        a URL to scan those hosts for, defaults to "/"
+   -t, --threads    number of threads to use for scanning
+   -o, --out        name of output file, defaults to STDOUT
+   -w, --wait       time to wait for a response in seconds, default is 10 seconds
+   -i, --include-content
+                    show only results which contain the string, an inclusion overrides
+                    an exclusion
+   -x, --exclude-content
+                    show only results which do not contain the string
+
    
    host(s) is one of the following:
        - a single IP address (e.g. 192.168.2.1)
