@@ -196,7 +196,7 @@ def main():
     hosts = args.hosts
     output = args.out
     wait = args.wait
-    match = args.m
+    match = args.match_string
     if output != sys.stdout:
         if os.path.isfile(output):
             assert False, "[-] file %s already exists, exiting" % output
