@@ -205,11 +205,11 @@ def main():
 
     # create scanner object and scan
     scanner = HTTPScan(url, ports, threads, hosts, wait, match)
-    output.write("[*] scanning %s hosts on %s ports" % (scanner.num_hosts, scanner.num_ports))
+    output.write("[*] scanning %s hosts on %s ports\n" % (scanner.num_hosts, scanner.num_ports))
     start_time = time.time()
     scanner.scan(output)
     end_time = time.time()
-    output.write("[*] scanned %s hosts in %03f seconds" % (len(scanner.hosts), end_time - start_time))
+    output.write("[*] scanned %s hosts in %03f seconds\n" % (len(scanner.hosts), end_time - start_time))
 
 
 def print_help():
@@ -221,11 +221,9 @@ def print_help():
    -t, --threads    number of threads to use for scanning
    -o, --out        name of output file, defaults to STDOUT
    -w, --wait       time to wait for a response in seconds, default is 10 seconds
-   -i, --include-content
-                    show only results which contain the string, an inclusion overrides
-                    an exclusion
-   -x, --exclude-content
-                    show only results which do not contain the string
+   -m, --match-string
+                    the scan results will indicate whether the content of the 
+                    HTTP response received includes the provided string
 
    
    host(s) is one of the following:
