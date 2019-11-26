@@ -11,7 +11,8 @@
 #   -t, --threads   number of threads to use for scanning
 #   -o, --out       name of output file, defaults to STDOUT
 #   -w, --wait      time to wait for a response in seconds, default is 10 seconds
-#   
+#      
+#
 #   host(s) is one of the following:
 #       - a single IP address (e.g. 192.168.2.1)
 #       - a range of IP addresses (e.g. 192.168.2.10-192.168.2.12)
@@ -121,7 +122,7 @@ class HTTPScan():
                     if r.url == full_url:
                         result.append('[*] %s - status: %d' % (r.url, r.status_code))
                     else:
-                        result.append('[*] REDIRECT %s to %s - status: %d' % (full_url, r.url, r.status_code))
+                        result.append('[*] %s - status: %d REDIRECT to %s' % (r.url, r.status_code, full_url))
                 except:
                     result.append('[-] could not connect to %s:%s' % (host, p))
 
@@ -170,6 +171,7 @@ def main():
     parser.add_argument('-t', '--threads', type=int, default=1)
     parser.add_argument('-o', '--out', default=sys.stdout)
     parser.add_argument('-w', '--wait', type=int, default=10)
+    parser.add_argument('-H', '--header')
     args = parser.parse_args()
 
     # gather arguments
@@ -187,11 +189,11 @@ def main():
 
     # create scanner object and scan
     scanner = HTTPScan(url, ports, threads, hosts, wait)
-    output.write("[*] scanning %s hosts on %s ports" % (scanner.num_hosts, scanner.num_ports))
+    output.write("[*] scanning %s hosts on %s ports\n" % (scanner.num_hosts, scanner.num_ports))
     start_time = time.time()
     scanner.scan(output)
     end_time = time.time()
-    output.write("[*] scanned %s hosts in %03f seconds" % (len(scanner.hosts), end_time - start_time))
+    output.write("[*] scanned %s hosts in %03f seconds\n" % (len(scanner.hosts), end_time - start_time))
 
 
 def print_help():
